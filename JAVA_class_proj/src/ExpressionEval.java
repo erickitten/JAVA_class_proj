@@ -2,26 +2,25 @@ import java.util.Scanner;
 import java.util.Stack;
 
 
-
-
 /**
 this class is used to solve mathematics expressions
 and can be execute directly as a calculator
 **/
-public class ExpressionEval{
+public class ExpressionEval{	
 	
 	//functions map to one-character operator
-	public static String ASIN = "A";
-	public static String ACOS = "B";
-	public static String ATAN = "C";
-	public static String SINH = "D";
-	public static String COSH = "E";
-	public static String TANH = "F";
-	public static String SIN = "G";
-	public static String COS = "H";
-	public static String TAN = "I";
+	private static final String ASIN = "A";
+	private static final String ACOS = "B";
+	private static final String ATAN = "C";
+	private static final String SINH = "D";
+	private static final String COSH = "E";
+	private static final String TANH = "F";
+	private static final String SIN = "G";
+	private static final String COS = "H";
+	private static final String TAN = "I";
+	private static final String LN = "J";
 	
-			
+	private static double lastAns = 0;				
 		
 	/**
 	the method solves expression in standard mathematics expression form
@@ -51,6 +50,10 @@ public class ExpressionEval{
 		expression = expression.replaceAll("sin",SIN);
 		expression = expression.replaceAll("cos",COS);
 		expression = expression.replaceAll("tan",TAN);
+		expression = expression.replaceAll("ln",LN);
+		expression = expression.replaceAll("pi",Double.toString(Math.PI));
+		expression = expression.replaceAll("e",Double.toString(Math.E));
+		expression = expression.replaceAll("ans",Double.toString(lastAns));
 		//replace the unuery "-" with "_"
 		prescanBuilder = new StringBuilder(expression);
 		for(current = 0;current < expression.length();current++){
@@ -123,8 +126,7 @@ public class ExpressionEval{
 				//pop the stack and repeat the test with new element on top
 				//finally, push the character onto the stack
 			}else{
-				System.out.println("error, system will exit");
-				System.exit(0);
+				throw new IllegalArgumentException("illegal input in expression");
 			}
 		}
 		while(!processStack.empty()){
@@ -184,8 +186,13 @@ public class ExpressionEval{
 						case "I":
 							temp = Math.tan(degRadInput(temp,useDeg));
 							break;
+						case "J":
+							temp = Math.log(temp);
+						break;
+						default:
+							throw new UnsupportedOperationException("undefined operators");
 					}
-				}else{
+				}else{//left assoc
 					switch(postfixArray[current]){
 						case "+":
 							temp = solveStack.pop() + temp;
@@ -202,7 +209,10 @@ public class ExpressionEval{
 						case "^":
 							temp = Math.pow(solveStack.pop(),temp);
 							break;
-						
+						//case ",":
+						//	break;//do nothing
+						default:
+							throw new UnsupportedOperationException("undefined operators");
 					}
 				}
 				solveStack.push(temp);
@@ -210,26 +220,24 @@ public class ExpressionEval{
 				//if the string is binary operator, pop two number from stack (there should be at least two numbers)
 				//evaluate them, and push the answer back to the stack
 			}else{		
-				System.out.println("error, system will exit");
-				System.exit(0);
+				throw new IllegalArgumentException("syntex error in expression");
 			}
 		}
 		if(!solveStack.empty()){
 			answer = solveStack.pop();
 		}else{
-			System.out.println("error, system will exit");
-			System.exit(0);
+			throw new IllegalArgumentException("syntex error in expression");
 		}
 		//after all object scanned, there should be only one number left
 		//and that is the answer
 		if(!solveStack.empty()){
-			System.out.println("error, system will exit");
-			System.exit(0);
-			}
+			throw new IllegalArgumentException("syntex error in expression");
+		}
+		lastAns = answer;//recoard ans
 		return answer;
 	}
 	
-	public static double degRadInput(double in,boolean useDeg){
+	private static double degRadInput(double in,boolean useDeg){
 		if(useDeg){
 			return Math.toRadians(in);
 		}else{
@@ -237,7 +245,7 @@ public class ExpressionEval{
 		}		
 	}
 	
-	public static double degRadOutput(double in,boolean useDeg){
+	private static double degRadOutput(double in,boolean useDeg){
 		if(useDeg){
 			return Math.toDegrees(in);
 		}else{
@@ -245,7 +253,7 @@ public class ExpressionEval{
 		}		
 	}
 	
-	public static boolean isOperator(char scanned){
+	private static boolean isOperator(char scanned){
 		if(Character.isAlphabetic(scanned)){
 			return true;
 		}
@@ -263,12 +271,12 @@ public class ExpressionEval{
 	}
 	
 	
-	public static boolean isOperator(String scanned){
+	private static boolean isOperator(String scanned){
 		return isOperator(scanned.charAt(0));		
 	}
 	
 	
-	public static boolean isRightAssoc(char scanned){
+	private static boolean isRightAssoc(char scanned){
 		if(Character.isAlphabetic(scanned)){
 			return true;
 		}
@@ -281,12 +289,12 @@ public class ExpressionEval{
 	}
 	
 	
-	public static boolean isRightAssoc(String scanned){
+	private static boolean isRightAssoc(String scanned){
 		return isRightAssoc(scanned.charAt(0));		
 	}
 	
 	
-	public static boolean isOperand(char scanned){
+	private static boolean isOperand(char scanned){
 		if(Character.isDigit(scanned)){
 			return true;
 		}else if(scanned == '.'){
@@ -297,7 +305,7 @@ public class ExpressionEval{
 	}
 	
 	
-	public static boolean isOperand(String scanned){
+	private static boolean isOperand(String scanned){
 		if(Character.isDigit(scanned.charAt(0))){
 			return true;
 			//any given number should be positive, and the first number is always digit
@@ -307,21 +315,23 @@ public class ExpressionEval{
 	}
 	
 	
-	public static int precedenceOf(char scanned){
+	private static int precedenceOf(char scanned){
 		if(Character.isAlphabetic(scanned)){
-			return 4;
+			return 5;
 		}
 		switch(scanned){
 			case '+':
 			case '-':
-				return 1;
+				return 2;
 			case '*':
 			case '/':
-				return 2;
-			case '^':
 				return 3;
-			case '_':
+			case '^':
 				return 4;
+			case '_':
+				return 5;
+			//case ',':
+			//	return 1;
 			case '(':
 			default:
 				return 0;
