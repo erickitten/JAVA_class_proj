@@ -1,23 +1,23 @@
-import java.util.Scanner;
+
 
 
 /**
-this class is used to solve mathematic expressions
+this class is used to solve mathematics expressions
 and can be execute directly as a calculator
 **/
 public class ExpressionEval{
 		
 	/**
-	the muthod solves expression in standard mathematic expression form
-	containing adding, substraction, mutiply ,division and power operator
+	the method solves expression in standard mathematics expression form
+	containing adding, subtraction, multiply ,division and power operator
 	the answer is given in a double number
 	**/
 	public static double solve(String expression){
 		String[] postfixArray;
 		StringBuilder prescanBuilder = new StringBuilder(expression);
 		StringBuilder postFixBuilder = new StringBuilder();
-		CharStack processStack = new CharStack();
-		DoubleStack solveStack;
+		Stack<char> processStack = new CharStack();
+		Stack<double> solveStack;
 		int current = 0;
 		double temp;
 		double answer = 0;
@@ -31,7 +31,7 @@ public class ExpressionEval{
 				//if the first character is minus, than it must be unary
 			}else if(prescanBuilder.charAt(current) == '-' && isOperator(prescanBuilder.charAt(current - 1))){
 				prescanBuilder.replace(current,current + 1,"_");
-				//a minus immiediately after an operator is unary
+				//a minus immediately after an operator is unary
 			}else if(prescanBuilder.charAt(current) == '-' && prescanBuilder.charAt(current - 1) == '('){
 				prescanBuilder.replace(current,current + 1,"_");
 				//a minus immiediately after an left parenthesis is unary
