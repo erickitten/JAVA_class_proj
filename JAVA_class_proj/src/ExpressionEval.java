@@ -1,3 +1,6 @@
+import java.util.Scanner;
+import java.util.Stack;
+
 
 
 
@@ -6,25 +9,50 @@ this class is used to solve mathematics expressions
 and can be execute directly as a calculator
 **/
 public class ExpressionEval{
+	
+	//functions map to one-character operator
+	public static String ASIN = "A";
+	public static String ACOS = "B";
+	public static String ATAN = "C";
+	public static String SINH = "D";
+	public static String COSH = "E";
+	public static String TANH = "F";
+	public static String SIN = "G";
+	public static String COS = "H";
+	public static String TAN = "I";
+	
+			
 		
 	/**
 	the method solves expression in standard mathematics expression form
 	containing adding, subtraction, multiply ,division and power operator
 	the answer is given in a double number
 	**/
-	public static double solve(String expression){
+	public static double solve(String expression,boolean useDeg){
 		String[] postfixArray;
-		StringBuilder prescanBuilder = new StringBuilder(expression);
+		StringBuilder prescanBuilder;
 		StringBuilder postFixBuilder = new StringBuilder();
-		Stack<char> processStack = new CharStack();
-		Stack<double> solveStack;
+		Stack<Character> processStack = new Stack<Character>();
+		Stack<Double> solveStack;
 		int current = 0;
 		double temp;
 		double answer = 0;
 		
 		
 		//prescan the expression
+		//replace functions
+		expression = expression.toLowerCase();
+		expression = expression.replaceAll("asin",ASIN);
+		expression = expression.replaceAll("acos",ACOS);
+		expression = expression.replaceAll("atan",ATAN);
+		expression = expression.replaceAll("sinh",SINH);
+		expression = expression.replaceAll("cosh",COSH);
+		expression = expression.replaceAll("tanh",TANH);
+		expression = expression.replaceAll("sin",SIN);
+		expression = expression.replaceAll("cos",COS);
+		expression = expression.replaceAll("tan",TAN);
 		//replace the unuery "-" with "_"
+		prescanBuilder = new StringBuilder(expression);
 		for(current = 0;current < expression.length();current++){
 			if(current == 0 && prescanBuilder.charAt(current) == '-'){
 				prescanBuilder.replace(0,1,"_");
@@ -36,10 +64,10 @@ public class ExpressionEval{
 				prescanBuilder.replace(current,current + 1,"_");
 				//a minus immiediately after an left parenthesis is unary
 			}
-		}
+		}		
 		current = 0;
-		expression = prescanBuilder.toString();
-		//update the expression
+		expression = prescanBuilder.toString();	
+		//after replacement ,all operator should be one char
 		
 
 		//infix to postfix
@@ -80,7 +108,7 @@ public class ExpressionEval{
 			}else if(isOperator(expression.charAt(current)) && (precedenceOf(expression.charAt(current)) > precedenceOf(processStack.peek()))){
 				processStack.push(expression.charAt(current));
 				//if the character is operator and has higher precedence than the top of stack, push it onto the stack
-			}else if(isOperator(expression.charAt(current)) && isUnary(expression.charAt(current)) && (precedenceOf(expression.charAt(current)) == precedenceOf(processStack.peek()))){
+			}else if(isOperator(expression.charAt(current)) && isRightAssoc(expression.charAt(current)) && (precedenceOf(expression.charAt(current)) == precedenceOf(processStack.peek()))){
 				processStack.push(expression.charAt(current));
 				//since unary operators is compute from right to left, unuaries with same precedence should be pushed on the stack
 			}else if(isOperator(expression.charAt(current)) && (precedenceOf(expression.charAt(current)) <= precedenceOf(processStack.peek()))){
@@ -117,17 +145,45 @@ public class ExpressionEval{
 		postfixArray = postFixBuilder.toString().split(" ");
 		current = 0;
 		temp = 0;
-		solveStack = new DoubleStack();
+		solveStack = new Stack<Double>();
 		for(current = 0;current < postfixArray.length;current++){
 			if(isOperand(postfixArray[current])){
 				solveStack.push(Double.parseDouble(postfixArray[current]));
 				//if the string is operand, convert it to double and push it onto the stack
 			}else if(isOperator(postfixArray[current]) && !(solveStack.empty())){
 				temp = solveStack.pop();
-				if(isUnary(postfixArray[current])){
+				if(isRightAssoc(postfixArray[current])){
 					switch(postfixArray[current]){
 						case "_":
 							temp = -temp;
+							break;
+						case "A":
+							temp = degRadOutput(Math.asin(temp),useDeg);
+							break;
+						case "B":
+							temp = degRadOutput(Math.acos(temp),useDeg);
+							break;
+						case "C":
+							temp = degRadOutput(Math.atan(temp),useDeg);
+							break;
+						case "D":
+							temp = Math.sinh(temp);
+							break;
+						case "E":
+							temp = Math.cosh(temp);
+							break;
+						case "F":
+							temp = Math.tanh(temp);
+							break;
+						case "G":
+							temp = Math.sin(degRadInput(temp,useDeg));
+							break;
+						case "H":
+							temp = Math.cos(degRadInput(temp,useDeg));
+							break;
+						case "I":
+							temp = Math.tan(degRadInput(temp,useDeg));
+							break;
 					}
 				}else{
 					switch(postfixArray[current]){
@@ -146,6 +202,7 @@ public class ExpressionEval{
 						case "^":
 							temp = Math.pow(solveStack.pop(),temp);
 							break;
+						
 					}
 				}
 				solveStack.push(temp);
@@ -172,15 +229,33 @@ public class ExpressionEval{
 		return answer;
 	}
 	
+	public static double degRadInput(double in,boolean useDeg){
+		if(useDeg){
+			return Math.toRadians(in);
+		}else{
+			return in;
+		}		
+	}
+	
+	public static double degRadOutput(double in,boolean useDeg){
+		if(useDeg){
+			return Math.toDegrees(in);
+		}else{
+			return in;
+		}		
+	}
 	
 	public static boolean isOperator(char scanned){
+		if(Character.isAlphabetic(scanned)){
+			return true;
+		}
 		switch(scanned){
 			case '+':
 			case '-':
 			case '*':
 			case '/':
 			case '^':
-			case '_':
+			case '_':			
 				return true;
 			default:
 				return false;
@@ -189,21 +264,14 @@ public class ExpressionEval{
 	
 	
 	public static boolean isOperator(String scanned){
-		switch(scanned){
-			case "+":
-			case "-":
-			case "*":
-			case "/":
-			case "^":
-			case "_":
-				return true;
-			default:
-				return false;
-		}
+		return isOperator(scanned.charAt(0));		
 	}
 	
 	
-	public static boolean isUnary(char scanned){
+	public static boolean isRightAssoc(char scanned){
+		if(Character.isAlphabetic(scanned)){
+			return true;
+		}
 		switch(scanned){
 			case '_':
 				return true;
@@ -213,13 +281,8 @@ public class ExpressionEval{
 	}
 	
 	
-	public static boolean isUnary(String scanned){
-		switch(scanned){
-			case "_":
-				return true;
-			default:
-				return false;
-		}
+	public static boolean isRightAssoc(String scanned){
+		return isRightAssoc(scanned.charAt(0));		
 	}
 	
 	
@@ -245,6 +308,9 @@ public class ExpressionEval{
 	
 	
 	public static int precedenceOf(char scanned){
+		if(Character.isAlphabetic(scanned)){
+			return 4;
+		}
 		switch(scanned){
 			case '+':
 			case '-':
@@ -263,6 +329,31 @@ public class ExpressionEval{
 		}
 	}
 	
+	/**
+	 tester
+	 */
+	public static void main(String args[]){
+		Scanner keyboard = new Scanner(System.in);
+		String input = new String();
+		
+		if(args.length == 2){
+			System.out.println(" = " + solve(args[1], true));
+		}else{
+			System.out.println("Welcome ,please enter expressions below : ");
+			do{
+				input = keyboard.nextLine();
+					if(input.equals("exit")){
+						System.out.println(" goodbye :)");
+						break;
+					}else if(input.equals("")){
+						continue;
+					}else{
+						System.out.println(" = " + solve(input, true));
+					}
+			}while(true);
+		}
+		keyboard.close();
+	}	
 	
 }
 	
