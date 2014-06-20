@@ -20,7 +20,7 @@ public class Calculator extends JFrame implements ActionListener{
 	}
 	
 	public Calculator(){
-		expField = new JTextField(25);
+		expField = new JTextField(28);
 		resField = new JTextField(20);
 		evalBtn = new JButton("eval");
 		radBox = new JCheckBox("use radian");

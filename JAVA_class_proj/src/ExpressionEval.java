@@ -1,10 +1,7 @@
-import java.util.Scanner;
 import java.util.Stack;
-
 
 /**
 this class is used to solve mathematics expressions
-and can be execute directly as a calculator
 **/
 public class ExpressionEval{	
 	
@@ -22,6 +19,7 @@ public class ExpressionEval{
 	private static final String LOG = "K";
 	private static final String SQRT = "L";
 	private static final String ROOT = "M";
+	private static final String ABS = "N";
 	
 	private static double lastAns = 0;				
 		
@@ -57,6 +55,7 @@ public class ExpressionEval{
 		expression = expression.replaceAll("log",LOG);
 		expression = expression.replaceAll("sqrt",SQRT);
 		expression = expression.replaceAll("root",ROOT);
+		expression = expression.replaceAll("abs",ABS);
 		expression = expression.replaceAll("pi",Double.toString(Math.PI));
 		expression = expression.replaceAll("e",Double.toString(Math.E));
 		expression = expression.replaceAll("ans",Double.toString(lastAns));
@@ -203,6 +202,9 @@ public class ExpressionEval{
 							break;
 						case ROOT:
 							temp = Math.pow(temp,1/solveStack.pop());
+							break;
+						case ABS:
+							temp = Math.abs(temp);
 							break;
 						default:
 							throw new UnsupportedOperationException("undefined operators");
@@ -354,32 +356,6 @@ public class ExpressionEval{
 				//left parenthesis is seen as operator here (for convenience), and has the lowest precedence
 		}
 	}
-	
-	/**
-	 tester
-	 */
-	public static void main(String args[]){
-		Scanner keyboard = new Scanner(System.in);
-		String input = new String();
-		
-		if(args.length == 2){
-			System.out.println(" = " + solve(args[1], true));
-		}else{
-			System.out.println("Welcome ,please enter expressions below : ");
-			do{
-				input = keyboard.nextLine();
-					if(input.equals("exit")){
-						System.out.println(" goodbye :)");
-						break;
-					}else if(input.equals("")){
-						continue;
-					}else{
-						System.out.println(" = " + solve(input, true));
-					}
-			}while(true);
-		}
-		keyboard.close();
-	}	
 	
 }
 	
