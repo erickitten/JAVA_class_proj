@@ -19,6 +19,9 @@ public class ExpressionEval{
 	private static final String COS = "H";
 	private static final String TAN = "I";
 	private static final String LN = "J";
+	private static final String LOG = "K";
+	private static final String SQRT = "L";
+	private static final String ROOT = "M";
 	
 	private static double lastAns = 0;				
 		
@@ -51,6 +54,9 @@ public class ExpressionEval{
 		expression = expression.replaceAll("cos",COS);
 		expression = expression.replaceAll("tan",TAN);
 		expression = expression.replaceAll("ln",LN);
+		expression = expression.replaceAll("log",LOG);
+		expression = expression.replaceAll("sqrt",SQRT);
+		expression = expression.replaceAll("root",ROOT);
 		expression = expression.replaceAll("pi",Double.toString(Math.PI));
 		expression = expression.replaceAll("e",Double.toString(Math.E));
 		expression = expression.replaceAll("ans",Double.toString(lastAns));
@@ -159,36 +165,45 @@ public class ExpressionEval{
 						case "_":
 							temp = -temp;
 							break;
-						case "A":
+						case ASIN:
 							temp = degRadOutput(Math.asin(temp),useDeg);
 							break;
-						case "B":
+						case ACOS:
 							temp = degRadOutput(Math.acos(temp),useDeg);
 							break;
-						case "C":
+						case ATAN:
 							temp = degRadOutput(Math.atan(temp),useDeg);
 							break;
-						case "D":
+						case SINH:
 							temp = Math.sinh(temp);
 							break;
-						case "E":
+						case COSH:
 							temp = Math.cosh(temp);
 							break;
-						case "F":
+						case TANH:
 							temp = Math.tanh(temp);
 							break;
-						case "G":
+						case SIN:
 							temp = Math.sin(degRadInput(temp,useDeg));
 							break;
-						case "H":
+						case COS:
 							temp = Math.cos(degRadInput(temp,useDeg));
 							break;
-						case "I":
+						case TAN:
 							temp = Math.tan(degRadInput(temp,useDeg));
 							break;
-						case "J":
+						case LN:
 							temp = Math.log(temp);
-						break;
+							break;
+						case LOG:
+							temp = Math.log(temp)/Math.log(solveStack.pop());
+							break;
+						case SQRT:
+							temp = Math.sqrt(temp);
+							break;
+						case ROOT:
+							temp = Math.pow(temp,1/solveStack.pop());
+							break;
 						default:
 							throw new UnsupportedOperationException("undefined operators");
 					}
@@ -209,8 +224,8 @@ public class ExpressionEval{
 						case "^":
 							temp = Math.pow(solveStack.pop(),temp);
 							break;
-						//case ",":
-						//	break;//do nothing
+						case ",":
+							break;	//split for multi-arg function ,does nothing
 						default:
 							throw new UnsupportedOperationException("undefined operators");
 					}
@@ -263,7 +278,8 @@ public class ExpressionEval{
 			case '*':
 			case '/':
 			case '^':
-			case '_':			
+			case '_':
+			case ',':	//split for multi-arg function ,does nothing
 				return true;
 			default:
 				return false;
@@ -330,8 +346,8 @@ public class ExpressionEval{
 				return 4;
 			case '_':
 				return 5;
-			//case ',':
-			//	return 1;
+			case ',':	//split for multi-arg function ,does nothing
+				return 1;
 			case '(':
 			default:
 				return 0;

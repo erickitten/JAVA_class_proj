@@ -32,6 +32,7 @@ public class Calculator extends JFrame implements ActionListener{
 		
 		evalBtn.addActionListener(this);
 		resField.setEditable(false);
+		this.getRootPane().setDefaultButton(evalBtn);//let the button listen enter
 		
 		this.add(expField);
 		this.add(evalBtn);
